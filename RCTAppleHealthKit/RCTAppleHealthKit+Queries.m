@@ -385,7 +385,7 @@
     // Create the query
     HKStatisticsCollectionQuery *query = [[HKStatisticsCollectionQuery alloc] initWithQuantityType:quantityType
                                                                            quantitySamplePredicate:nil
-                                                                                           options:HKStatisticsOptionCumulativeSum
+                                                                                           options:HKStatisticsOptionCumulativeSum | HKStatisticsOptionSeparateBySource
                                                                                         anchorDate:anchorDate
                                                                                 intervalComponents:interval];
 
@@ -407,15 +407,18 @@
                                            NSDate *startDate = result.startDate;
                                            NSDate *endDate = result.endDate;
                                            double value = [quantity doubleValueForUnit:unit];
-
                                            NSString *startDateString = [RCTAppleHealthKit buildISO8601StringFromDate:startDate];
                                            NSString *endDateString = [RCTAppleHealthKit buildISO8601StringFromDate:endDate];
-
+                                           for(HKSource *source in result.sources) {
+                                               HKQuantity *sourceQuantity = [result sumQuantityForSource:source];
+                                               double sourceValue = [sourceQuantity doubleValueForUnit:unit];
+                                               NSLog(@"date: %@ --- source: %@ --- identifier: %@ --- Steps: %@", startDateString, source.name, source.bundleIdentifier, @(sourceValue));
+                                           }
                                            NSDictionary *elem = @{
-                                                   @"value" : @(value),
-                                                   @"startDate" : startDateString,
-                                                   @"endDate" : endDateString,
-                                           };
+                                                                  @"value" : @(value),
+                                                                  @"startDate" : startDateString,
+                                                                  @"endDate" : endDateString,
+                                                                  };
                                            [data addObject:elem];
                                        }
                                    }];
